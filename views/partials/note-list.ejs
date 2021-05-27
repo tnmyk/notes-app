@@ -1,0 +1,10 @@
+<div class="note-list">
+  <h1 class="note-list-heading">Notes</h1>
+  <div class="note-list-element-container">
+    <!-- <a href="#" class="note-list-element">📄 My First Note</a>  -->
+     
+    <% allnotes.forEach(note=>{ %> 
+      <a href="/notes/<%=note.split(" ").join('-')%>" class="note-list-element">📄 <%= (note).substr(0,Math.min(16,note.length-4)) %></a>
+    <% }) %>
+  </div>
+</div>

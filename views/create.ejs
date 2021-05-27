@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="en">
+  <%- include('./partials/head.ejs')%>
+
+  <body>
+    <%- include('./partials/header.ejs') %>
+
+    <main>
+      <%- include('./partials/note-list.ejs') %>
+      <div class="opened">
+        <button class="saveBtn">Save</button>
+        <button class="deleteBtn">Delete</button>
+        <input
+          type="text"
+          id="input-title"
+          value="<%=title%> "
+          placeholder="Title"
+          spellcheck="false"
+        />
+
+        <div class="editor-container">
+          <div id="editor"></div>
+        </div>
+      </div>
+    </main>
+    <div class="quill-hidden"><%=quilldelta%></div>
+  </body>
+
+  <script src="https://cdn.quilljs.com/1.3.6/quill.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+  <script>
+    
+    var quilldelta = document.querySelector(".quill-hidden").textContent;
+
+    var toolbarOptions = [
+      ["bold", "italic", "underline", "strike"], // toggled buttons
+      ["blockquote", "code-block"],
+
+      [{ header: 1 }, { header: 2 }], // custom button values
+      [{ list: "ordered" }, { list: "bullet" }],
+      [{ script: "sub" }, { script: "super" }], // superscript/subscript
+      [{ indent: "-1" }, { indent: "+1" }], // outdent/indent
+      [{ direction: "rtl" }], // text direction
+
+      [{ size: ["small", false, "large", "huge"] }], // custom dropdown
+      [{ header: [1, 2, 3, 4, 5, 6, false] }],
+
+      [{ color: [] }, { background: [] }], // dropdown with defaults from theme
+      [{ font: [] }],
+      [{ align: [] }],
+
+      ["clean"], // remove formatting button
+    ];
+    var quill = new Quill("#editor", {
+      modules: {
+        toolbar: toolbarOptions,
+      },
+      theme: "snow",
+      placeholder: "Start Writing",
+    });
+    quill.root.setAttribute("spellcheck", false);
+      
+
+    if (quilldelta == "") {
+      console.log("empty");
+      // TODO:display : hidden
+    } else {
+      // console.log(quilldelta)
+      var deleteBtn = document.querySelector(".deleteBtn");
+      deleteBtn.style.display = "block";
+      
+      if (quilldelta != "") {
+        quilldelta = JSON.parse(quilldelta);
+      }
+      quill.setContents(quilldelta);
+      deleteBtn.addEventListener("click", () => {
+        save();
+        var inputTitle = document.querySelector("#input-title").value;
+        axios
+        .post("/delete", {
+          // title: inputTitle.trim(),
+          title: window.location.pathname,
+        })
+        .then((res) => {
+          console.log(res);
+          
+          })
+        .catch((error) => {
+          console.error(error);
+
+        });
+        setTimeout(() => {
+           window.location = "/"
+        },1000)
+
+      });
+    }
+    function save() {
+      var delta = quill.getContents();
+      console.log(delta);
+      // location.href='/';
+      var inputTitle = document.querySelector("#input-title").value;
+      axios
+        .post("/create", {
+          data: delta,
+          title: inputTitle.trim(),
+        })
+        .then((res) => {
+          console.log(res);
+           window.location = "/"
+        })
+        .catch((error) => {
+          console.error(error);
+           window.location = "/"
+          
+
+        });
+    }
+    document.querySelector("#input-title").focus();
+    var saveBtn = document.querySelector(".saveBtn");
+    saveBtn.addEventListener("click", () => {
+      save();
+      var inputTitle = document.querySelector("#input-title").value;
+      setTimeout(() => {
+          if(inputTitle.trim() ==''){
+            var list = document.querySelector('.note-list-element-container')
+           window.location = `notes/untitled-${list.children.length+1}.txt`
+          }
+          else
+           window.location = `notes/${inputTitle.trim().split(' ').join('-')}.txt`
+        },1000)
+    });
+  </script>
+</html>
