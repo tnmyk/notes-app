@@ -3,5 +3,6 @@
 ```
 npm i
 npm run package
-open 'out'
 ```
+
+open 'out'
